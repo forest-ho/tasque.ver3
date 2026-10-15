@@ -26,14 +26,25 @@ def ensure_browser_user_id() -> str:
         st.html(
             f"""
             <script>
-            const secure = window.location.protocol === "https:" ? "; Secure" : "";
+            const cookiePolicy = window.location.protocol === "https:"
+                ? "; SameSite=None; Secure"
+                : "; SameSite=Lax";
+            const reloadAttemptKey = "tasque_browser_user_reload_attempted";
             document.cookie = "{COOKIE_NAME}={user_id}; "
-                + "Path=/; Max-Age={COOKIE_MAX_AGE_SECONDS}; SameSite=Lax" + secure;
+                + "Path=/; Max-Age={COOKIE_MAX_AGE_SECONDS}" + cookiePolicy;
             const saved = document.cookie.split("; ").some(
                 value => value === "{COOKIE_NAME}={user_id}"
             );
-            if (saved) {{
+            const reloadAttempted =
+                sessionStorage.getItem(reloadAttemptKey) === "1";
+            if (saved && !reloadAttempted) {{
+                sessionStorage.setItem(reloadAttemptKey, "1");
                 window.location.reload();
+            }} else if (saved) {{
+                document.currentScript.insertAdjacentText(
+                    "afterend",
+                    "Cookieは保存されましたが、アプリ側で確認できません。ブラウザーのCookie設定をご確認のうえ、ページを再読み込みしてください。"
+                );
             }} else {{
                 document.currentScript.insertAdjacentText(
                     "afterend",

@@ -158,7 +158,11 @@ class UserDataIsolationTests(unittest.TestCase):
 
         html = streamlit.html.call_args.args[0]
         self.assertIn("document.cookie =", html)
+        self.assertIn("; SameSite=None; Secure", html)
         self.assertIn("window.location.reload()", html)
+        self.assertIn("sessionStorage.getItem(reloadAttemptKey)", html)
+        self.assertIn("sessionStorage.setItem(reloadAttemptKey, \"1\")", html)
+        self.assertIn("アプリ側で確認できません", html)
         self.assertNotIn("window.parent.location.reload()", html)
         self.assertTrue(streamlit.html.call_args.kwargs["unsafe_allow_javascript"])
 
