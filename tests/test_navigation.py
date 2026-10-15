@@ -1,4 +1,5 @@
 import unittest
+from datetime import date
 from unittest.mock import Mock, patch
 
 from components.menu import _menu_button
@@ -7,11 +8,14 @@ from components.navigation import (
     HOME,
     MAIN_TASK,
     TITLE,
+    change_calendar_month,
     go_back,
     go_home,
     initialize_navigation,
     navigate_to,
     open_main_task,
+    select_calendar_date,
+    set_calendar_picker_month,
 )
 
 
@@ -79,6 +83,34 @@ class NavigationTests(unittest.TestCase):
 
         action.assert_called_once_with("add")
         rerun.assert_called_once_with(scope="app")
+
+    def test_calendar_month_navigation_handles_year_boundaries(self):
+        self.state["calendar_month"] = date(2026, 12, 1)
+
+        change_calendar_month(1)
+        self.assertEqual(self.state["calendar_month"], date(2027, 1, 1))
+
+        change_calendar_month(-1)
+        change_calendar_month(-1)
+        self.assertEqual(self.state["calendar_month"], date(2026, 11, 1))
+
+    def test_selecting_calendar_day_updates_selected_date_and_month(self):
+        selected = date(2027, 2, 14)
+
+        select_calendar_date(selected)
+
+        self.assertEqual(self.state["selected_date"], selected)
+        self.assertEqual(self.state["calendar_picker"], selected)
+        self.assertEqual(self.state["calendar_month"], date(2027, 2, 1))
+
+    def test_calendar_picker_change_updates_displayed_month(self):
+        selected = date(2027, 4, 9)
+        self.state["calendar_picker"] = selected
+
+        set_calendar_picker_month()
+
+        self.assertEqual(self.state["selected_date"], selected)
+        self.assertEqual(self.state["calendar_month"], date(2027, 4, 1))
 
 
 if __name__ == "__main__":

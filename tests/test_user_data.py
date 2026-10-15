@@ -53,6 +53,102 @@ class UserDataIsolationTests(unittest.TestCase):
 
         self.assertEqual(database.list_sub_tasks(self.user_a, task_id, self.db_path), [])
 
+    def test_initial_main_task_and_multiple_subtasks_create_one_monster_batch(self):
+        main_task_id = database.create_main_task_with_subtasks(
+            self.user_a,
+            "First quest",
+            "2026-10-20",
+            [
+                {
+                    "name": "First step",
+                    "priority": "高",
+                    "due_date": "2026-10-18",
+                },
+                {
+                    "name": "Second step",
+                    "priority": "低",
+                    "due_date": "2026-10-19",
+                },
+            ],
+            self.db_path,
+        )
+
+        monsters = database.list_monster_batches(
+            self.user_a,
+            main_task_id,
+            self.db_path,
+        )
+        self.assertEqual(len(monsters), 1)
+        self.assertEqual(
+            [task["name"] for task in monsters[0]["subtasks"]],
+            ["First step", "Second step"],
+        )
+
+    def test_main_tasks_due_on_date_include_completion_from_all_subtasks(self):
+        due_date = "2026-10-15"
+        completed_task_id = database.create_main_task(
+            self.user_a, "Completed quest", due_date, self.db_path
+        )
+        incomplete_task_id = database.create_main_task(
+            self.user_a, "Incomplete quest", due_date, self.db_path
+        )
+        no_subtasks_task_id = database.create_main_task(
+            self.user_a, "Quest without subtasks", due_date, self.db_path
+        )
+        database.create_main_task(
+            self.user_a, "Quest on another day", "2026-10-16", self.db_path
+        )
+        completed_subtask_ids = database.create_sub_tasks(
+            self.user_a,
+            completed_task_id,
+            [
+                {
+                    "name": "First completed step",
+                    "priority": "高",
+                    "due_date": due_date,
+                },
+                {
+                    "name": "Second completed step",
+                    "priority": "低",
+                    "due_date": due_date,
+                },
+            ],
+            self.db_path,
+        )
+        database.create_sub_task(
+            self.user_a,
+            incomplete_task_id,
+            "Remaining step",
+            "中",
+            due_date,
+            self.db_path,
+        )
+        for sub_task_id in completed_subtask_ids:
+            self.assertTrue(
+                database.complete_sub_task(
+                    self.user_a,
+                    completed_task_id,
+                    sub_task_id,
+                    self.db_path,
+                )
+            )
+
+        quests = database.list_main_tasks_due_on(
+            self.user_a,
+            due_date,
+            self.db_path,
+        )
+
+        self.assertEqual(
+            {quest["name"]: quest["completed"] for quest in quests},
+            {
+                "Completed quest": True,
+                "Incomplete quest": False,
+                "Quest without subtasks": False,
+            },
+        )
+        self.assertNotIn("Quest on another day", {quest["name"] for quest in quests})
+
     def test_create_multiple_subtasks_and_complete_each_only_once(self):
         task_id = database.create_main_task(
             self.user_a, "User A task", "2026-11-01", self.db_path
@@ -98,6 +194,98 @@ class UserDataIsolationTests(unittest.TestCase):
                 self.user_a, task_id, self.db_path
             )],
             [True, False],
+        )
+
+    def test_each_subtask_registration_creates_a_separate_monster_batch(self):
+        main_task_id = database.create_main_task(
+            self.user_a,
+            "Batch monsters",
+            "2026-10-20",
+            self.db_path,
+        )
+        database.create_sub_tasks(
+            self.user_a,
+            main_task_id,
+            [
+                {
+                    "name": "First batch step",
+                    "priority": "高",
+                    "due_date": "2026-10-20",
+                },
+                {
+                    "name": "Second batch step",
+                    "priority": "低",
+                    "due_date": "2026-10-20",
+                },
+            ],
+            self.db_path,
+        )
+        database.create_sub_task(
+            self.user_a,
+            main_task_id,
+            "Second batch",
+            "中",
+            "2026-10-20",
+            self.db_path,
+        )
+
+        monsters = database.list_monster_batches(
+            self.user_a,
+            main_task_id,
+            self.db_path,
+        )
+
+        self.assertEqual(len(monsters), 2)
+        self.assertEqual(
+            [[task["priority"] for task in monster["subtasks"]] for monster in monsters],
+            [["中"], ["高", "低"]],
+        )
+
+    def test_initialize_database_groups_legacy_subtasks_into_one_monster(self):
+        with sqlite3.connect(self.db_path) as connection:
+            connection.executescript(
+                """
+                CREATE TABLE users (user_id TEXT PRIMARY KEY);
+                CREATE TABLE main_tasks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    due_date TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE (user_id, id)
+                );
+                CREATE TABLE sub_tasks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    main_task_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    priority TEXT NOT NULL,
+                    due_date TEXT NOT NULL,
+                    completed INTEGER NOT NULL DEFAULT 0,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                INSERT INTO users (user_id) VALUES ('legacy-user');
+                INSERT INTO main_tasks (user_id, name, due_date)
+                    VALUES ('legacy-user', 'Legacy task', '2026-10-20');
+                INSERT INTO sub_tasks (
+                    user_id, main_task_id, name, priority, due_date
+                ) VALUES
+                    ('legacy-user', 1, 'Old step one', '高', '2026-10-20'),
+                    ('legacy-user', 1, 'Old step two', '低', '2026-10-20');
+                """
+            )
+
+        database.initialize_database(self.db_path)
+
+        monsters = database.list_monster_batches(
+            "legacy-user",
+            1,
+            self.db_path,
+        )
+        self.assertEqual(len(monsters), 1)
+        self.assertEqual(
+            [task["name"] for task in monsters[0]["subtasks"]],
+            ["Old step one", "Old step two"],
         )
 
     def test_initialize_database_migrates_existing_subtask_table(self):

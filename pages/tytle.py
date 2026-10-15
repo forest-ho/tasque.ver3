@@ -8,7 +8,11 @@ from components.ui import show_asset
 
 def render_title() -> None:
     st.write("")
-    show_asset(Path(__file__).resolve().parents[1] / "assets" / "ui" / "ロゴ.png")
+    logo_column = st.columns([1, 2, 1])[1]
+    with logo_column:
+        show_asset(
+            Path(__file__).resolve().parents[1] / "assets" / "ui" / "ロゴ.png"
+        )
     st.title("たすくえ")
     st.markdown(
         '<div class="quest-panel">毎日のタスクを、冒険に変えよう。</div>',

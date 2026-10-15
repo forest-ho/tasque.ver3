@@ -74,28 +74,6 @@ def inject_styles() -> None:
             max-width: 100%;
             height: auto;
         }
-        .st-key-loading-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #111827;
-        }
-        .st-key-loading-overlay [data-testid="stVerticalBlock"] {
-            width: 100%;
-            align-items: center;
-        }
-        .st-key-loading-overlay [data-testid="stElementContainer"] {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-        .st-key-loading-overlay [data-testid="stImage"] {
-            width: min(72vw, 20rem);
-            margin-inline: auto;
-        }
         .quest-panel {
             padding: 1rem;
             border: 1px solid rgba(229, 189, 103, 0.65);
@@ -106,53 +84,53 @@ def inject_styles() -> None:
         .quest-muted {
             color: #d4d9e2;
         }
-        .monster-display {
-            width: min(100%, 280px);
-            margin: 0 auto 1rem;
-        }
-        .monster-hp-bar {
-            position: relative;
-            width: 100%;
-            height: 24px;
-            margin: 0 auto 0.4rem;
-        }
-        .monster-hp-track {
-            position: absolute;
-            top: 8px;
-            right: 0;
-            left: 0;
-            height: 8px;
-            overflow: hidden;
-            background: #382a31;
-            -webkit-mask-position: center;
-            mask-position: center;
-            -webkit-mask-size: 100% 24px;
-            mask-size: 100% 24px;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-        }
-        .monster-hp-fill {
-            height: 100%;
-        }
-        .monster-hp-label {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 0.8rem;
+        .calendar-month-heading {
+            padding: 0.35rem 0;
+            color: var(--quest-ink);
+            font-size: 1.8rem;
             font-weight: 700;
-            line-height: 1;
-            text-shadow: 0 1px 2px #000, 0 0 3px #000;
+            text-align: center;
         }
-        .monster-art {
-            display: block;
-            width: 250px;
-            max-width: 100%;
-            height: auto;
-            margin: 0 auto;
+        .calendar-weekday {
+            padding: 0.35rem 0;
+            color: var(--quest-gold);
+            font-weight: 700;
+            text-align: center;
+        }
+        .calendar-empty-day {
+            min-height: 2.9rem;
+        }
+        .calendar-quest-list {
+            margin: 0.6rem 0 0;
+            padding-left: 1.4rem;
+        }
+        .calendar-quest-list li {
+            margin: 0.35rem 0;
+        }
+        .calendar-quest-completed {
+            color: #9ca3af;
+            text-decoration-line: line-through;
+            text-decoration-style: double;
+        }
+        [class*="st-key-calendar_day_"] div.stButton > button,
+        .st-key-calendar_today div.stButton > button {
+            min-height: 2.7rem;
+            padding: 0;
+            border: 1px solid rgba(229, 189, 103, 0.25);
+            border-radius: 0.65rem;
+            background: rgba(20, 28, 43, 0.72);
+            box-shadow: none;
+        }
+        .st-key-calendar_today div.stButton > button {
+            border-color: rgba(232, 103, 113, 0.65);
+            background: rgba(232, 103, 113, 0.28);
+            color: #fff1f1;
+        }
+        [class*="st-key-calendar_day_"] div.stButton > button:hover,
+        .st-key-calendar_today div.stButton > button:hover {
+            border-color: var(--quest-gold);
+            background: rgba(229, 189, 103, 0.2);
+            color: #fff;
         }
         @media (max-width: 480px) {
             .block-container {
@@ -175,10 +153,3 @@ def show_asset(path: Path, *, width: int = 380) -> None:
     if not path.is_file():
         raise FileNotFoundError(f"Required image asset not found: {path}")
     st.image(str(path), width=width)
-
-
-def show_loading_overlay(path: Path) -> None:
-    if not path.is_file():
-        raise FileNotFoundError(f"Required image asset not found: {path}")
-    with st.container(key="loading-overlay"):
-        st.image(str(path), width=320)

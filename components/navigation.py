@@ -19,6 +19,29 @@ def initialize_navigation(state) -> None:
     state.setdefault("selected_main_task_id", None)
     state.setdefault("selected_date", date.today())
     state.setdefault("calendar_picker", state["selected_date"])
+    state.setdefault(
+        "calendar_month",
+        date(state["selected_date"].year, state["selected_date"].month, 1),
+    )
+
+
+def change_calendar_month(offset: int) -> None:
+    current = st.session_state.calendar_month
+    month_index = current.year * 12 + current.month - 1 + offset
+    year, month = divmod(month_index, 12)
+    st.session_state.calendar_month = date(year, month + 1, 1)
+
+
+def select_calendar_date(selected: date) -> None:
+    st.session_state.selected_date = selected
+    st.session_state.calendar_picker = selected
+    st.session_state.calendar_month = date(selected.year, selected.month, 1)
+
+
+def set_calendar_picker_month() -> None:
+    selected = st.session_state.calendar_picker
+    st.session_state.selected_date = selected
+    st.session_state.calendar_month = date(selected.year, selected.month, 1)
 
 
 def navigate_to(screen: str) -> None:

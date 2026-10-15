@@ -25,7 +25,6 @@ def _menu_button(
 def _menu_dialog() -> None:
     _menu_button("メインタスク追加", open_main_task, "add")
     _menu_button("サブタスク追加", navigate_to, SUB_TASK)
-    _menu_button("メインタスク変更", open_main_task, "edit")
     _menu_button("プロフィール", navigate_to, PROFILE)
     _menu_button("カレンダー", navigate_to, CALENDAR)
     _menu_button("閉じる", _close_menu)

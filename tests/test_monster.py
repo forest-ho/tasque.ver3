@@ -1,4 +1,5 @@
 import unittest
+from contextlib import nullcontext
 from pathlib import Path
 from unittest.mock import patch
 
@@ -41,48 +42,93 @@ class MonsterTests(unittest.TestCase):
             30,
         )
 
-    def test_render_displays_hp_frame_and_current_over_max(self):
+    def test_render_displays_hp_progress_and_current_over_max(self):
         with (
-            patch("components.monster.st.markdown") as markdown,
             patch(
-                "components.monster._image_data_url",
-                side_effect=["data:image/png;base64,frame", "data:image/png;base64,monster"],
-            ) as image_data_url,
+                "components.monster.st.columns",
+                return_value=[nullcontext(), nullcontext(), nullcontext()],
+            ),
+            patch("components.monster.st.container", return_value=nullcontext()),
+            patch("components.monster.st.markdown") as markdown,
+            patch("components.monster.st.progress") as progress,
+            patch("components.monster.st.image") as image,
+            patch("components.monster.st.caption") as caption,
         ):
-            render_monster(ROOT, [
-                {"priority": "中", "completed": False},
-                {"priority": "低", "completed": False},
-            ])
+            render_monster(
+                ROOT,
+                [
+                    {"priority": "中", "completed": False},
+                    {"priority": "低", "completed": False},
+                ],
+                "モンスターは回復した！",
+            )
 
-        html = markdown.call_args.args[0]
-        self.assertIn('aria-label="HP 30/30"', html)
-        self.assertIn(">30 / 30</span>", html)
-        self.assertIn("mask-image:url('data:image/png;base64,frame')", html)
-        self.assertNotIn('class="monster-hp-frame"', html)
-        self.assertIn('class="monster-art"', html)
-        self.assertIn("background:#38c76b", html)
-        self.assertEqual(
-            image_data_url.call_args_list[1].args[0],
-            ROOT / "assets" / "monsters" / "defolt" / "デフォルトドラゴン.png",
+        progress.assert_called_once_with(1, text="HP 30 / 30")
+        markdown.assert_called_once_with(
+            '<p style="text-align:center;font-weight:700">'
+            "モンスターがあらわれた！</p>",
+            unsafe_allow_html=True,
         )
+        image.assert_called_once_with(
+            str(ROOT / "assets" / "monsters" / "defolt" / "デフォルトドラゴン.png"),
+            width=250,
+        )
+        caption.assert_called_once_with("モンスターは回復した！")
 
     def test_render_shows_empty_hp_for_monster_without_subtasks(self):
         with (
-            patch("components.monster.st.markdown") as markdown,
             patch(
-                "components.monster._image_data_url",
-                side_effect=["data:image/png;base64,frame", "data:image/png;base64,monster"],
-            ) as image_data_url,
+                "components.monster.st.columns",
+                return_value=[nullcontext(), nullcontext(), nullcontext()],
+            ),
+            patch("components.monster.st.container", return_value=nullcontext()),
+            patch("components.monster.st.markdown") as markdown,
+            patch("components.monster.st.progress") as progress,
+            patch("components.monster.st.image") as image,
         ):
             render_monster(ROOT, [])
 
-        html = markdown.call_args.args[0]
-        self.assertIn('aria-label="HP 0/0"', html)
-        self.assertIn(">0 / 0</span>", html)
-        self.assertIn("background:#e34848", html)
-        self.assertEqual(
-            image_data_url.call_args_list[1].args[0],
-            ROOT / "assets" / "monsters" / "defolt" / "デフォルトドラゴン_敗北.png",
+        progress.assert_called_once_with(0, text="HP 0 / 0")
+        markdown.assert_called_once_with(
+            '<p style="text-align:center;font-weight:700">'
+            "モンスターをやっつけた！</p>",
+            unsafe_allow_html=True,
+        )
+        image.assert_called_once_with(
+            str(
+                ROOT
+                / "assets"
+                / "monsters"
+                / "defolt"
+                / "デフォルトドラゴン_敗北.png"
+            ),
+            width=250,
+        )
+
+    def test_render_aggregates_all_subtask_batches_as_one_monster(self):
+        with (
+            patch(
+                "components.monster.st.columns",
+                return_value=[nullcontext(), nullcontext(), nullcontext()],
+            ),
+            patch("components.monster.st.container", return_value=nullcontext()),
+            patch("components.monster.st.markdown") as markdown,
+            patch("components.monster.st.progress") as progress,
+            patch("components.monster.st.image") as image,
+        ):
+            render_monster(
+                ROOT,
+                [
+                    {"priority": "低", "completed": False},
+                    {"priority": "高", "completed": True},
+                ],
+            )
+
+        progress.assert_called_once_with(10 / 60, text="HP 10 / 60")
+        markdown.assert_not_called()
+        image.assert_called_once_with(
+            str(ROOT / "assets" / "monsters" / "defolt" / "デフォルトドラゴン.png"),
+            width=250,
         )
 
 

@@ -3,6 +3,19 @@ from html import escape
 import streamlit as st
 
 import database
+from components.monster import HP_BY_PRIORITY
+
+
+def _complete_sub_task(
+    user_id: str,
+    main_task_id: int,
+    sub_task_id: int,
+    priority: str,
+) -> None:
+    if database.complete_sub_task(user_id, main_task_id, sub_task_id):
+        st.session_state.monster_notice = (
+            f"モンスターに{HP_BY_PRIORITY[priority]}のダメージ！"
+        )
 
 
 def render_sub_tasks(
@@ -30,7 +43,7 @@ def render_sub_tasks(
             st.button(
                 task["name"],
                 key=f"complete_sub_task_{task['id']}",
-                on_click=database.complete_sub_task,
-                args=(user_id, main_task_id, task["id"]),
+                on_click=_complete_sub_task,
+                args=(user_id, main_task_id, task["id"], task["priority"]),
             )
             st.caption(f"優先度 {task['priority']} · 期限 {task['due_date']}")

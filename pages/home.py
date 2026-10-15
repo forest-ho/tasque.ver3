@@ -19,12 +19,14 @@ def render_home(root: Path) -> None:
     if st.session_state.selected_main_task_id not in tasks_by_id:
         st.session_state.selected_main_task_id = tasks[0]["id"] if tasks else None
     if tasks:
+        selected_index = list(tasks_by_id).index(
+            st.session_state.selected_main_task_id
+        )
         st.selectbox(
             "メインタスクを選択",
             options=list(tasks_by_id),
-            index=None,
+            index=selected_index,
             format_func=lambda task_id: tasks_by_id[task_id]["name"],
-            placeholder="メインタスクを選択してください",
             key="selected_main_task_id",
         )
     current_task = tasks_by_id.get(st.session_state.selected_main_task_id)
@@ -40,7 +42,12 @@ def render_home(root: Path) -> None:
     if not tasks:
         st.info("メインタスクをつくってモンスター狩りをはじめよう！")
     elif current_task:
-        render_monster(root, subtasks)
+        st.caption("メインタスクのHP")
+        render_monster(
+            root,
+            subtasks,
+            st.session_state.pop("monster_notice", None),
+        )
     render_sub_tasks(
         subtasks,
         user_id,
