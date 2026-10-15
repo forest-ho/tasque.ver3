@@ -23,7 +23,7 @@ def ensure_browser_user_id() -> str:
     if user_id is None:
         user_id = str(uuid.uuid4())
         st.info("ブラウザーごとのユーザーデータを準備しています…")
-        st.iframe(
+        st.html(
             f"""
             <script>
             const secure = window.location.protocol === "https:" ? "; Secure" : "";
@@ -33,16 +33,16 @@ def ensure_browser_user_id() -> str:
                 value => value === "{COOKIE_NAME}={user_id}"
             );
             if (saved) {{
-                window.parent.location.reload();
+                window.location.reload();
             }} else {{
-                document.body.innerText =
-                    "ユーザー識別用Cookieを保存できません。ブラウザーのCookie設定をご確認ください。";
-                document.body.style.cssText =
-                    "font: 14px sans-serif; color: #fff; padding: 8px;";
+                document.currentScript.insertAdjacentText(
+                    "afterend",
+                    "ユーザー識別用Cookieを保存できません。ブラウザーのCookie設定をご確認ください。"
+                );
             }}
             </script>
             """,
-            height=48,
+            unsafe_allow_javascript=True,
         )
         st.stop()
     st.session_state.user_id = user_id

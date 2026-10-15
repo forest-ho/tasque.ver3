@@ -3,9 +3,11 @@ import tempfile
 import unittest
 import uuid
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 import database
-from components.user_identity import parse_user_id
+from components.user_identity import ensure_browser_user_id, parse_user_id
 
 
 class UserDataIsolationTests(unittest.TestCase):
@@ -142,6 +144,23 @@ class UserDataIsolationTests(unittest.TestCase):
         self.assertEqual(parse_user_id(user_id), user_id)
         self.assertIsNone(parse_user_id("not-a-user-id"))
         self.assertIsNone(parse_user_id(None))
+
+    def test_missing_cookie_sets_identity_in_the_main_document(self):
+        streamlit = Mock(
+            context=SimpleNamespace(cookies={}),
+            session_state={},
+        )
+        streamlit.stop.side_effect = RuntimeError("stopped")
+
+        with patch("components.user_identity.st", streamlit):
+            with self.assertRaisesRegex(RuntimeError, "stopped"):
+                ensure_browser_user_id()
+
+        html = streamlit.html.call_args.args[0]
+        self.assertIn("document.cookie =", html)
+        self.assertIn("window.location.reload()", html)
+        self.assertNotIn("window.parent.location.reload()", html)
+        self.assertTrue(streamlit.html.call_args.kwargs["unsafe_allow_javascript"])
 
 
 if __name__ == "__main__":
