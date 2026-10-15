@@ -5,21 +5,6 @@ import streamlit as st
 import database
 
 
-def render_main_task(task: dict | None) -> None:
-    st.markdown("#### 📜 現在のメインタスク")
-    if task is None:
-        st.markdown(
-            '<div class="quest-panel"><strong>まだメインタスクがありません</strong>'
-            '<br><span class="quest-muted">メニューからクエストを設定しましょう。</span></div>',
-            unsafe_allow_html=True,
-        )
-        return
-    st.markdown('<div class="quest-panel">', unsafe_allow_html=True)
-    st.write(f"**{task['name']}**")
-    st.caption(f"期限: {task['due_date']}")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
 def render_sub_tasks(
     tasks: list[dict],
     user_id: str | None = None,

@@ -6,8 +6,7 @@ import database
 from components.menu import open_menu, show_menu_if_open
 from components.monster import render_monster
 from components.navigation import CALENDAR, navigate_to
-from components.task_list import render_main_task, render_sub_tasks
-from components.ui import show_asset
+from components.task_list import render_sub_tasks
 
 
 def render_home(root: Path) -> None:
@@ -33,14 +32,14 @@ def render_home(root: Path) -> None:
         st.session_state.active_main_task_id = current_task["id"]
     st.metric("プレイヤーレベル", f"Lv. {profile['level']}")
     st.button("📅 カレンダー", on_click=navigate_to, args=(CALENDAR,))
-    show_asset(root / "assets" / "ui" / "メインタスク.png")
-    render_main_task(current_task)
     subtasks = (
         database.list_sub_tasks(user_id, current_task["id"])
         if current_task
         else []
     )
-    if current_task:
+    if not tasks:
+        st.info("メインタスクをつくってモンスター狩りをはじめよう！")
+    elif current_task:
         render_monster(root, subtasks)
     render_sub_tasks(
         subtasks,
