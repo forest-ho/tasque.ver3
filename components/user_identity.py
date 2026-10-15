@@ -21,7 +21,19 @@ def parse_user_id(value: str | None) -> str | None:
 def ensure_browser_user_id() -> str:
     user_id = parse_user_id(st.context.cookies.get(COOKIE_NAME))
     if user_id is None:
+        user_id = parse_user_id(st.session_state.get("user_id"))
+        if user_id is not None:
+            if not st.session_state.get("browser_user_cookie_warning_shown"):
+                st.warning(
+                    "ブラウザーのCookieをアプリ側で確認できません。"
+                    "このセッション中はデータを利用できますが、"
+                    "次回も同じユーザーデータを利用できない場合があります。"
+                )
+                st.session_state["browser_user_cookie_warning_shown"] = True
+            return user_id
+
         user_id = str(uuid.uuid4())
+        st.session_state["user_id"] = user_id
         st.info("ブラウザーごとのユーザーデータを準備しています…")
         st.html(
             f"""
@@ -55,6 +67,5 @@ def ensure_browser_user_id() -> str:
             """,
             unsafe_allow_javascript=True,
         )
-        st.stop()
-    st.session_state.user_id = user_id
+    st.session_state["user_id"] = user_id
     return user_id

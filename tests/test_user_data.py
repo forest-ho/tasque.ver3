@@ -145,17 +145,17 @@ class UserDataIsolationTests(unittest.TestCase):
         self.assertIsNone(parse_user_id("not-a-user-id"))
         self.assertIsNone(parse_user_id(None))
 
-    def test_missing_cookie_sets_identity_in_the_main_document(self):
+    def test_missing_cookie_sets_identity_and_continues_to_render(self):
         streamlit = Mock(
             context=SimpleNamespace(cookies={}),
             session_state={},
         )
-        streamlit.stop.side_effect = RuntimeError("stopped")
 
         with patch("components.user_identity.st", streamlit):
-            with self.assertRaisesRegex(RuntimeError, "stopped"):
-                ensure_browser_user_id()
+            user_id = ensure_browser_user_id()
 
+        self.assertEqual(streamlit.session_state["user_id"], user_id)
+        self.assertEqual(parse_user_id(user_id), user_id)
         html = streamlit.html.call_args.args[0]
         self.assertIn("document.cookie =", html)
         self.assertIn("; SameSite=None; Secure", html)
@@ -165,6 +165,19 @@ class UserDataIsolationTests(unittest.TestCase):
         self.assertIn("アプリ側で確認できません", html)
         self.assertNotIn("window.parent.location.reload()", html)
         self.assertTrue(streamlit.html.call_args.kwargs["unsafe_allow_javascript"])
+
+    def test_missing_cookie_reuses_session_identity(self):
+        user_id = str(uuid.uuid4())
+        streamlit = Mock(
+            context=SimpleNamespace(cookies={}),
+            session_state={"user_id": user_id},
+        )
+
+        with patch("components.user_identity.st", streamlit):
+            self.assertEqual(ensure_browser_user_id(), user_id)
+
+        streamlit.html.assert_not_called()
+        streamlit.warning.assert_called_once()
 
 
 if __name__ == "__main__":
