@@ -97,6 +97,15 @@ def inject_styles() -> None:
             font-weight: 700;
             text-align: center;
         }
+        .st-key-calendar_grid [data-testid="stHorizontalBlock"] {
+            flex-wrap: nowrap !important;
+            gap: 0.2rem !important;
+        }
+        .st-key-calendar_grid [data-testid="column"] {
+            min-width: 0 !important;
+            width: 0 !important;
+            flex: 1 1 0% !important;
+        }
         .calendar-empty-day {
             min-height: 2.9rem;
         }
@@ -112,8 +121,7 @@ def inject_styles() -> None:
             text-decoration-line: line-through;
             text-decoration-style: double;
         }
-        [class*="st-key-calendar_day_"] div.stButton > button,
-        .st-key-calendar_today div.stButton > button {
+        [class*="st-key-calendar_day_"] div.stButton > button {
             min-height: 2.7rem;
             padding: 0;
             border: 1px solid rgba(229, 189, 103, 0.25);
@@ -121,16 +129,21 @@ def inject_styles() -> None:
             background: rgba(20, 28, 43, 0.72);
             box-shadow: none;
         }
-        .st-key-calendar_today div.stButton > button {
+        [class*="st-key-calendar_day_saturday_"] div.stButton > button {
+            color: #78b7ff;
+        }
+        [class*="st-key-calendar_day_sunday_"] div.stButton > button,
+        [class*="st-key-calendar_day_holiday_"] div.stButton > button {
+            color: #ff8585;
+        }
+        .st-key-calendar_grid [class*="_today_"] div.stButton > button {
             border-color: rgba(232, 103, 113, 0.65);
             background: rgba(232, 103, 113, 0.28);
-            color: #fff1f1;
         }
         [class*="st-key-calendar_day_"] div.stButton > button:hover,
-        .st-key-calendar_today div.stButton > button:hover {
+        .st-key-calendar_grid [class*="_today_"] div.stButton > button:hover {
             border-color: var(--quest-gold);
             background: rgba(229, 189, 103, 0.2);
-            color: #fff;
         }
         @media (max-width: 480px) {
             .block-container {

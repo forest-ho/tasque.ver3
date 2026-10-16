@@ -2,6 +2,7 @@ import calendar
 from datetime import date
 from html import escape
 
+import jpholiday
 import streamlit as st
 
 import database
@@ -11,6 +12,16 @@ from components.navigation import (
     select_calendar_date,
     set_calendar_picker_month,
 )
+
+
+def _calendar_day_class(displayed_date: date) -> str:
+    if jpholiday.is_holiday(displayed_date):
+        return "holiday"
+    if displayed_date.weekday() == 5:
+        return "saturday"
+    if displayed_date.weekday() == 6:
+        return "sunday"
+    return "weekday"
 
 
 def render_daily_quests(selected: date, tasks: list[dict]) -> None:
@@ -56,45 +67,46 @@ def render_calendar() -> None:
             args=(1,),
         )
 
-    weekday_columns = st.columns(7)
-    for column, weekday in zip(
-        weekday_columns,
-        ("月", "火", "水", "木", "金", "土", "日"),
-    ):
-        with column:
-            st.markdown(
-                f'<div class="calendar-weekday">{weekday}</div>',
-                unsafe_allow_html=True,
-            )
-
-    today = date.today()
-    for week in calendar.monthcalendar(shown_month.year, shown_month.month):
-        day_columns = st.columns(7)
-        for column, day_number in zip(day_columns, week):
+    with st.container(key="calendar_grid"):
+        weekday_columns = st.columns(7)
+        for column, weekday in zip(
+            weekday_columns,
+            ("月", "火", "水", "木", "金", "土", "日"),
+        ):
             with column:
-                if day_number == 0:
-                    st.markdown(
-                        '<div class="calendar-empty-day">&nbsp;</div>',
-                        unsafe_allow_html=True,
-                    )
-                    continue
-                displayed_date = date(
-                    shown_month.year,
-                    shown_month.month,
-                    day_number,
+                st.markdown(
+                    f'<div class="calendar-weekday">{weekday}</div>',
+                    unsafe_allow_html=True,
                 )
-                cell_key = (
-                    "calendar_today"
-                    if displayed_date == today
-                    else f"calendar_day_{displayed_date:%Y%m%d}"
-                )
-                with st.container(key=cell_key):
-                    st.button(
-                        str(day_number),
-                        key=f"calendar_select_{displayed_date:%Y%m%d}",
-                        on_click=select_calendar_date,
-                        args=(displayed_date,),
+
+        today = date.today()
+        for week in calendar.monthcalendar(shown_month.year, shown_month.month):
+            day_columns = st.columns(7)
+            for column, day_number in zip(day_columns, week):
+                with column:
+                    if day_number == 0:
+                        st.markdown(
+                            '<div class="calendar-empty-day">&nbsp;</div>',
+                            unsafe_allow_html=True,
+                        )
+                        continue
+                    displayed_date = date(
+                        shown_month.year,
+                        shown_month.month,
+                        day_number,
                     )
+                    today_marker = "_today" if displayed_date == today else ""
+                    cell_key = (
+                        f"calendar_day_{_calendar_day_class(displayed_date)}"
+                        f"{today_marker}_{displayed_date:%Y%m%d}"
+                    )
+                    with st.container(key=cell_key):
+                        st.button(
+                            str(day_number),
+                            key=f"calendar_select_{displayed_date:%Y%m%d}",
+                            on_click=select_calendar_date,
+                            args=(displayed_date,),
+                        )
 
     selected = st.date_input(
         "日付を選択",

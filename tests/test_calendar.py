@@ -2,10 +2,16 @@ import unittest
 from datetime import date
 from unittest.mock import patch
 
-from pages.calender import render_daily_quests
+from pages.calender import _calendar_day_class, render_daily_quests
 
 
 class CalendarQuestTests(unittest.TestCase):
+    def test_calendar_day_classes_follow_japanese_weekends_and_holidays(self):
+        self.assertEqual(_calendar_day_class(date(2026, 10, 17)), "saturday")
+        self.assertEqual(_calendar_day_class(date(2026, 10, 18)), "sunday")
+        self.assertEqual(_calendar_day_class(date(2026, 10, 12)), "holiday")
+        self.assertEqual(_calendar_day_class(date(2026, 10, 16)), "weekday")
+
     def test_daily_quests_are_listed_with_completed_style_and_escaped_names(self):
         tasks = [
             {"name": "Active quest", "completed": False},

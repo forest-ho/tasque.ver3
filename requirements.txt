@@ -1,1 +1,2 @@
 streamlit>=1.49
+jpholiday>=0.1.10

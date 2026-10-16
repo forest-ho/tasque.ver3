@@ -26,6 +26,13 @@
             "name": "localhost に対して Chrome を起動する",
             "url": "http://localhost:8080",
             "webRoot": "${workspaceFolder}"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Streamlit app (8502)",
+            "url": "http://localhost:8502",
+            "webRoot": "${workspaceFolder}"
         }
     ]
 }
