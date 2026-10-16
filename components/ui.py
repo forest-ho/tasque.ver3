@@ -102,12 +102,14 @@ def inject_styles() -> None:
             min-width: 0;
             flex-direction: row !important;
             flex-wrap: nowrap !important;
-            gap: 0.2rem !important;
+            gap: 0 !important;
         }
         .st-key-calendar_grid [data-testid="column"] {
             min-width: 0 !important;
-            width: 0 !important;
-            flex: 1 1 0% !important;
+            width: 14.285714% !important;
+            max-width: 14.285714% !important;
+            flex: 0 0 14.285714% !important;
+            box-sizing: border-box;
         }
         .calendar-empty-day {
             min-height: 2.9rem;
@@ -161,9 +163,6 @@ def inject_styles() -> None:
             }
             h2 {
                 font-size: 1.4rem !important;
-            }
-            .st-key-calendar_grid [data-testid="stHorizontalBlock"] {
-                gap: 0.1rem !important;
             }
             .calendar-weekday {
                 padding: 0.2rem 0;
