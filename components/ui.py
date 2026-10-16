@@ -164,6 +164,13 @@ def inject_styles() -> None:
             h2 {
                 font-size: 1.4rem !important;
             }
+            .st-key-calendar_grid [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+                box-sizing: border-box;
+                width: calc(100% / 7) !important;
+                max-width: calc(100% / 7) !important;
+                min-width: 0 !important;
+                flex: 0 0 calc(100% / 7) !important;
+            }
             .calendar-weekday {
                 padding: 0.2rem 0;
                 font-size: 0.8rem;
