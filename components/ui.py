@@ -98,6 +98,9 @@ def inject_styles() -> None:
             text-align: center;
         }
         .st-key-calendar_grid [data-testid="stHorizontalBlock"] {
+            width: 100%;
+            min-width: 0;
+            flex-direction: row !important;
             flex-wrap: nowrap !important;
             gap: 0.2rem !important;
         }
@@ -108,6 +111,10 @@ def inject_styles() -> None:
         }
         .calendar-empty-day {
             min-height: 2.9rem;
+        }
+        .st-key-calendar_grid div.stButton > button {
+            min-width: 0;
+            padding: 0;
         }
         .calendar-quest-list {
             margin: 0.6rem 0 0;
@@ -145,15 +152,29 @@ def inject_styles() -> None:
             border-color: var(--quest-gold);
             background: rgba(229, 189, 103, 0.2);
         }
-        @media (max-width: 480px) {
+        @media (max-width: 640px) {
             .block-container {
-                padding: 0.7rem 0.8rem 1.5rem;
+                padding: 0.6rem 0.5rem 1.25rem;
             }
             h1 {
                 font-size: 1.8rem !important;
             }
             h2 {
                 font-size: 1.4rem !important;
+            }
+            .st-key-calendar_grid [data-testid="stHorizontalBlock"] {
+                gap: 0.1rem !important;
+            }
+            .calendar-weekday {
+                padding: 0.2rem 0;
+                font-size: 0.8rem;
+            }
+            .calendar-empty-day {
+                min-height: 2.4rem;
+            }
+            [class*="st-key-calendar_day_"] div.stButton > button {
+                min-height: 2.4rem;
+                font-size: 0.9rem;
             }
         }
         </style>
