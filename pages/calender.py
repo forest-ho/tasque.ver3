@@ -42,6 +42,8 @@ def render_daily_quests(selected: date, tasks: list[dict]) -> None:
 
 
 def render_calendar() -> None:
+    st.warning("カレンダー機能は調整中です")
+
     shown_month = st.session_state.calendar_month
     previous, month_heading, following = st.columns([1, 4, 1])
     with previous:
