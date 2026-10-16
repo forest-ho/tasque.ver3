@@ -97,6 +97,11 @@ def inject_styles() -> None:
             font-weight: 700;
             text-align: center;
         }
+        .st-key-calendar_grid {
+            width: 100%;
+            max-width: 1080px;
+            margin-inline: auto;
+        }
         .st-key-calendar_grid [data-testid="stHorizontalBlock"] {
             width: 100%;
             min-width: 0;
@@ -112,6 +117,8 @@ def inject_styles() -> None:
             box-sizing: border-box;
         }
         .calendar-empty-day {
+            width: 100%;
+            aspect-ratio: 1 / 2;
             min-height: 2.9rem;
         }
         .st-key-calendar_grid div.stButton > button {
@@ -131,6 +138,9 @@ def inject_styles() -> None:
             text-decoration-style: double;
         }
         [class*="st-key-calendar_day_"] div.stButton > button {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 2;
             min-height: 2.7rem;
             padding: 0;
             border: 1px solid rgba(229, 189, 103, 0.25);
@@ -176,10 +186,10 @@ def inject_styles() -> None:
                 font-size: 0.8rem;
             }
             .calendar-empty-day {
-                min-height: 2.4rem;
+                min-height: 0;
             }
             [class*="st-key-calendar_day_"] div.stButton > button {
-                min-height: 2.4rem;
+                min-height: 0;
                 font-size: 0.9rem;
             }
         }
